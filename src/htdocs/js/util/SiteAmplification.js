@@ -1,7 +1,10 @@
 'use strict';
 
-var Formatter = require('util/Formatter'),
-    Util = require('util/Util');
+var Formatter = require('./Formatter'),
+    // Util = require('util/Util');
+    extend = require('extend');
+
+var Util = {extend: extend};
 
 // Bins provided by defaults are valid for 2015 NEHRP
 var _DEFAULTS = {

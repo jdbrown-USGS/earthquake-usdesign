@@ -1,12 +1,15 @@
 'use strict';
 
-var Model = require('mvc/Model'),
-    Util = require('util/Util'),
+var
+// var Model = require('../../../node_modules/hazdev-webutils/src/mvc/Model'),
+//     Util = require('../../../node_modules/hazdev-webutils/src/util/Util'),
+//
+//     LookupDataFactory = require('./util/LookupDataFactory'),
+    extend = require('extend'),
+    SiteAmplification = require('./util/SiteAmplification');
 
-    LookupDataFactory = require('util/LookupDataFactory'),
-    SiteAmplification = require('util/SiteAmplification');
 
-
+const Util = {extend: extend};
 var _DEFAULTS = {
 
 };
@@ -25,10 +28,10 @@ var NEHRPCalc2015 = function (params) {
     _siteAmplification = SiteAmplification();
     params = Util.extend({}, _DEFAULTS, params);
 
-    _lookupDataFactory = params.lookupDataFactory;
+    // _lookupDataFactory = params.lookupDataFactory;
 
     if (!_lookupDataFactory) {
-      _lookupDataFactory = LookupDataFactory();
+      // _lookupDataFactory = LookupDataFactory();
     }
   };
 
@@ -86,14 +89,16 @@ var NEHRPCalc2015 = function (params) {
         ssuh;
 
     result = _this.getResult(calculation);
-    ssuh = result.get('ssuh');
+    ssuh = result.ssuh || null; //.get('ssuh');
     if (ssuh === null) {
-      metadata = calculation.get('output').get('metadata');
-      ssuh = metadata.get('max_direction_ss') * result.get('mapped_ss');
+      metadata = calculation.output.metadata; // calculation.get('output').get('metadata');
+      // ssuh = metadata.get('max_direction_ss') * result.get('mapped_ss');
+      ssuh = metadata.max_direction_ss * result.mapped_ss;
 
-      result.set({
-        'ssuh': ssuh
-      });
+      // result.set({
+      //   'ssuh': ssuh
+      // });
+      result.ssuh = ssuh;
     }
     return ssuh;
   };
@@ -110,15 +115,16 @@ var NEHRPCalc2015 = function (params) {
         s1uh;
 
     result = _this.getResult(calculation);
-    s1uh = result.get('s1uh');
+    s1uh = result.s1uh || null; // .get('s1uh');
 
     if (s1uh === null) {
-      metadata = calculation.get('output').get('metadata');
-      s1uh = metadata.get('max_direction_s1') * result.get('mapped_s1');
+      metadata = calculation.output.metadata; // calculation.get('output').get('metadata');
+      s1uh = metadata.max_direction_s1 * result.mapped_s1; // metadata.get('max_direction_s1') * result.get('mapped_s1');
 
-      result.set({
-        's1uh': s1uh
-      });
+      // result.set({
+      //   's1uh': s1uh
+      // });
+      result.s1uh = s1uh;
     }
     return s1uh;
   };
@@ -134,7 +140,7 @@ var NEHRPCalc2015 = function (params) {
 
     result = _this.getResult(calculation);
 
-    return _this.getSsuh(calculation) * result.get('crs');
+    return _this.getSsuh(calculation) * result.crs; // result.get('crs');
   };
 
   /**
@@ -148,7 +154,7 @@ var NEHRPCalc2015 = function (params) {
 
     result = _this.getResult(calculation);
 
-    return _this.getS1uh(calculation) * result.get('cr1');
+    return _this.getS1uh(calculation) * result.cr1; // result.get('cr1');
   };
 
   /**
@@ -168,17 +174,19 @@ var NEHRPCalc2015 = function (params) {
         ssd;
 
     result = _this.getResult(calculation);
-    ssd = result.get('ssd');
+    ssd = result.ssd || null; // get('ssd');
     if (ssd === null) {
-      metadata = calculation.get('output').get('metadata');
-      geomeanSsd = result.get('geomean_ssd');
-      pgdv84 = metadata.get('percentile_ss') * geomeanSsd;
-      maxD84 = metadata.get('max_direction_ss') * pgdv84;
+      metadata = calculation.output.metadata; // calculation.get('output').get('metadata');
+      geomeanSsd = result.geomean_ssd; // get('geomean_ssd');
+      pgdv84 = metadata.percentile_ss * geomeanSsd; // metadata.get('percentile_ss') * geomeanSsd;
+      maxD84 = metadata.max_direction_ss * pgdv84; // get('max_direction_ss') * pgdv84;
 
-      ssd = Math.max(maxD84, metadata.get('deterministic_floor_ss'));
-      result.set({
-        'ssd': ssd
-      });
+      // ssd = Math.max(maxD84, metadata.get('deterministic_floor_ss'));
+      ssd = Math.max(maxD84, metadata.deterministic_floor_ss);
+      // result.set({
+      //   'ssd': ssd
+      // });
+      result.ssd = ssd;
     }
     return ssd;
   };
@@ -200,17 +208,25 @@ var NEHRPCalc2015 = function (params) {
         s1d;
 
     result = _this.getResult(calculation);
-    s1d = result.get('s1d');
-    if (s1d === null) {
-      metadata = calculation.get('output').get('metadata');
-      geomeanS1d = result.get('geomean_s1d');
-      pgdv841 = metadata.get('percentile_s1') * geomeanS1d;
-      maxD841 = metadata.get('max_direction_s1') * pgdv841;
+    // s1d = result.get('s1d');
+    s1d = result.s1d || null;
 
-      s1d = Math.max(maxD841, metadata.get('deterministic_floor_s1'));
-      result.set({
-        's1d': s1d
-      });
+    if (s1d === null) {
+      // metadata = calculation.get('output').get('metadata');
+      metadata = calculation.output.metadata;
+      // geomeanS1d = result.get('geomean_s1d');
+      geomeanS1d = result.geomean_s1d;
+      // pgdv841 = metadata.get('percentile_s1') * geomeanS1d;
+      pgdv841 = metadata.percentile_s1 * geomeanS1d;
+      // maxD841 = metadata.get('max_direction_s1') * pgdv841;
+      maxD841 = metadata.max_direction_s1 * pgdv841;
+
+      // s1d = Math.max(maxD841, metadata.get('deterministic_floor_s1'));
+      s1d = Math.max(maxD841, metadata.deterministic_floor_s1);
+      // result.set({
+      //   's1d': s1d
+      // });
+      result.s1d = s1d;
     }
     return s1d;
   };
@@ -227,14 +243,16 @@ var NEHRPCalc2015 = function (params) {
         ss;
 
     result = _this.getResult(calculation);
-    ss = result.get('ss');
+    // ss = result.get('ss');
+    ss = result.ss || null;
 
     if (ss === null) {
       ss = Math.min(_this.getSsur(calculation),
           _this.getSsd(calculation));
-      result.set({
-        'ss': ss
-      }, {silent: silent});
+      // result.set({
+      //   'ss': ss
+      // }, {silent: silent});
+      result.ss = ss;
     }
     return ss;
   };
@@ -251,14 +269,16 @@ var NEHRPCalc2015 = function (params) {
         s1;
 
     result = _this.getResult(calculation);
-    s1 = result.get('s1');
+    // s1 = result.get('s1');
+    s1 = result.s1 || null;
 
     if (s1 === null) {
       s1 = Math.min(_this.getS1ur(calculation),
           _this.getS1d(calculation));
-      result.set({
-        's1': s1
-      });
+      // result.set({
+      //   's1': s1
+      // });
+      result.s1 = s1;
     }
     return s1;
   };
@@ -275,16 +295,19 @@ var NEHRPCalc2015 = function (params) {
         siteClass;
 
     result = _this.getResult(calculation);
-    fa = result.get('fa');
+    // fa = result.get('fa');
+    fa = result.fa || null;
 
 
     if (fa === null) {
       siteClass = _this.getSiteClass(calculation);
       fa = _siteAmplification.getFa(_this.getSs(calculation),
-          siteClass.get('value'));
-      result.set({
-        'fa': fa
-      });
+          // siteClass.get('value'));
+          siteClass.value);
+      // result.set({
+      //   'fa': fa
+      // });
+      result.fa = fa;
     }
     return fa;
   };
@@ -301,15 +324,18 @@ var NEHRPCalc2015 = function (params) {
         siteClass;
 
     result = _this.getResult(calculation);
-    fv = result.get('fv');
+    // fv = result.get('fv');
+    fv = result.fv || null;
 
     if (fv === null) {
       siteClass = _this.getSiteClass(calculation);
       fv = _siteAmplification.getFv(_this.getS1(calculation),
-          siteClass.get('value'));
-      result.set({
-        'fv': fv
-      });
+          // siteClass.get('value'));
+          siteClass.value);
+      // result.set({
+      //   'fv': fv
+      // });
+      result.fv = fv;
     }
     return fv;
   };
@@ -325,13 +351,15 @@ var NEHRPCalc2015 = function (params) {
         sms;
 
     result = _this.getResult(calculation);
-    sms = result.get('sms');
+    // sms = result.get('sms');
+    sms = result.sms || null;
 
     if (sms === null) {
       sms = _this.getFa(calculation) * _this.getSs(calculation);
-      result.set({
-        'sms': sms
-      });
+      // result.set({
+      //   'sms': sms
+      // });
+      result.sms = sms;
     }
     return sms;
   };
@@ -347,13 +375,15 @@ var NEHRPCalc2015 = function (params) {
         sm1;
 
     result = _this.getResult(calculation);
-    sm1 = result.get('sm1');
+    // sm1 = result.get('sm1');
+    sm1 = result.sm1 || null;
 
     if (sm1 === null) {
       sm1 = _this.getFv(calculation) * _this.getS1(calculation);
-      result.set({
-        'sm1': sm1
-      });
+      // result.set({
+      //   'sm1': sm1
+      // });
+      result.sm1 = sm1;
     }
     return sm1;
   };
@@ -369,13 +399,15 @@ var NEHRPCalc2015 = function (params) {
         sds;
 
     result = _this.getResult(calculation);
-    sds = result.get('sds');
+    // sds = result.get('sds');
+    sds = result.sds;
 
     if (sds === null) {
       sds = (2/3) * _this.getSms(calculation);
-      result.set({
-        'sds': sds
-      });
+      // result.set({
+      //   'sds': sds
+      // });
+      result.sds = sds;
     }
     return sds;
   };
@@ -391,13 +423,15 @@ var NEHRPCalc2015 = function (params) {
         sd1;
 
     result = _this.getResult(calculation);
-    sd1 = result.get('sd1');
+    // sd1 = result.get('sd1');
+    sd1 = result.sd1;
 
     if (sd1 === null) {
       sd1 = (2/3) * _this.getSm1(calculation);
-      result.set({
-        'sd1': sd1
-      });
+      // result.set({
+      //   'sd1': sd1
+      // });
+      result.sd1 = sd1;
     }
     return sd1;
   };
@@ -417,22 +451,28 @@ var NEHRPCalc2015 = function (params) {
         result;
 
     result = _this.getResult(calculation);
-    pga = result.get('pga');
+    // pga = result.get('pga');
+    pga = result.pga || null;
 
     if (pga === null) {
-      metadata = calculation.get('output').get('metadata');
+      // metadata = calculation.get('output').get('metadata');
+      metadata = calculation.output.metadata;
 
-      probabilisticPga = result.get('mapped_pga');
+      // probabilisticPga = result.get('mapped_pga');
+      probabilisticPga = result.mapped_pga;
 
-      deterministicPga = result.get('geomean_pgad')  *
-          metadata.get('percentile_pga');
-      deterministicPga = Math.max(deterministicPga,
-          metadata.get('deterministic_floor_pga'));
+      // deterministicPga = result.get('geomean_pgad')  *
+      //     metadata.get('percentile_pga');
+      deterministicPga = result.geomean_pgad * metadata.percentile_pga;
+      // deterministicPga = Math.max(deterministicPga,
+      //     metadata.get('deterministic_floor_pga'));
+      deterministicPga = Math.max(deterministicPga, metadata.deterministic_floor_pga);
 
       pga = Math.min(probabilisticPga, deterministicPga);
-      result.set({
-        'pga': pga
-      });
+      // result.set({
+      //   'pga': pga
+      // });
+      result.pga = pga;
     }
     return pga;
   };
@@ -450,15 +490,18 @@ var NEHRPCalc2015 = function (params) {
         siteClass;
 
     result = _this.getResult(calculation);
-    fpga = result.get('fpga');
+    // fpga = result.get('fpga');
+    fpga = result.fpga || null;
 
     if (fpga === null) {
       siteClass = _this.getSiteClass(calculation);
       fpga = _siteAmplification.getFpga(_this.getPga(calculation),
-          siteClass.get('value'));
-      result.set({
-        'fpga': fpga
-      });
+          // siteClass.get('value'));
+          siteClass.value);
+      // result.set({
+      //   'fpga': fpga
+      // });
+      result.fpga = fpga;
     }
     return fpga;
   };
@@ -474,13 +517,15 @@ var NEHRPCalc2015 = function (params) {
         result;
 
     result = _this.getResult(calculation);
-    pgam = result.get('pgam');
+    // pgam = result.get('pgam');
+    pgam = result.pgam || null;
 
     if (pgam === null) {
       pgam = _this.getFpga(calculation) * _this.getPga(calculation);
-      result.set({
-        'pgam': pgam
-      });
+      // result.set({
+      //   'pgam': pgam
+      // });
+      result.pgam = pgam;
     }
     return pgam;
   };
@@ -527,9 +572,10 @@ var NEHRPCalc2015 = function (params) {
       sdSpectra.push([tn, sd1/tn]);
       i += 1;
     }
-    result.set({
-      'sdSpectrum': sdSpectra
-    });
+    // result.set({
+    //   'sdSpectrum': sdSpectra
+    // });
+    result.sdSpectrum = sdSPectra;
     return sdSpectra;
   };
 
@@ -575,9 +621,10 @@ var NEHRPCalc2015 = function (params) {
       smSpectra.push([tn, sm1/tn]);
       i +=  1;
     }
-    result.set({
-      'smSpectrum': smSpectra
-    });
+    // result.set({
+    //   'smSpectrum': smSpectra
+    // });
+    result.smSpectrum = smSpectra;
     return smSpectra;
   };
 
@@ -591,8 +638,10 @@ var NEHRPCalc2015 = function (params) {
     var result,
         resultJSON;
 
-    result = calculation.get('result');
-    resultJSON = result ? result.toJSON() : null;
+    // result = calculation.get('result');
+    // resultJSON = result ? result.toJSON() : null;
+    result = calculation.result;
+    resultJSON = result;
 
     if (!result || !(
       resultJSON.hasOwnProperty('latitude') &&
@@ -619,9 +668,10 @@ var NEHRPCalc2015 = function (params) {
       resultJSON.geomean_pgad !== null
     )) {
       result = _this.interpolate(calculation);
-      calculation.set({
-        'result': result
-      }, {silent: silent});
+      // calculation.set({
+      //   'result': result
+      // }, {silent: silent});
+      calculation.result = result;
     }
     return result;
   };
@@ -638,15 +688,28 @@ var NEHRPCalc2015 = function (params) {
         siteClass;
 
     result = _this.getResult(calculation);
-    siteClass = result.get('site_class');
+    // siteClass = result.get('site_class');
+    siteClass = result.site_class || null;
+    let SITE_CLASSES = {
+      1: {value: 'A'},
+      2: {value: 'B (measured)'},
+      3: {value: 'B (unmeasured)'},
+      4: {value: 'C'},
+      5: {value: 'D (determined)'},
+      6: {value: 'D (default)'},
+      7: {value: 'E'},
+    }
 
     if (siteClass === null) {
-      input = calculation.get('input');
-      siteClass = input.get('site_class');
-      siteClass = _lookupDataFactory.getSiteClass(siteClass);
-      result.set({
-        'site_class': siteClass
-      });
+      // input = calculation.get('input');
+      input = calculation.input;
+      // siteClass = input.get('site_class');
+      siteClass = input.site_class;
+      siteClass = SITE_CLASSES[siteClass]; //_lookupDataFactory.getSiteClass(siteClass);
+      // result.set({
+      //   'site_class': siteClass
+      // });
+      result.site_class = siteClass;
     }
     return siteClass;
   };
@@ -723,27 +786,28 @@ var NEHRPCalc2015 = function (params) {
         resultLat1,
         resultLat3;
 
-    input = calculation.get('input');
-    output = calculation.get('output');
-    data = output.get('data').data();
-    latInput = input.get('latitude');
-    lngInput = input.get('longitude');
-    metadata = output.get('metadata');
-    log = metadata.get('interpolation_method');
+    input = calculation.input; // calculation.get('input');
+    output = calculation.output; // calculation.get('output');
+    data = output.data; // output.get('data').data();
+    latInput = input.latitude; // input.get('latitude');
+    lngInput = input.longitude; // input.get('longitude');
+    metadata = output.metadata; // output.get('metadata');
+    log = metadata.interpolation_method; // metadata.get('interpolation_method');
 
     if (data.length === 1) {
-      result = Util.extend({}, data[0].get());
+      // result = Util.extend({}, data[0].get());
+      result = extend(true, {}, data[0]);
 
     } else if (data.length === 2) {
-      lat1 = data[0].get('latitude');
-      lat2 = data[1].get('latitude');
-      lng1 = data[0].get('longitude');
-      lng2 = data[1].get('longitude');
+      lat1 = data[0].latitude; // .get('latitude');
+      lat2 = data[1].latitude; // .get('latitude');
+      lng1 = data[0].longitude; // .get('longitude');
+      lng2 = data[1].longitude; // .get('longitude');
 
       if (lat1 === lat2) {
         result = _this.interpolateResults(
-            data[0].get(),
-            data[1].get(),
+            data[0], //.get(),
+            data[1], //.get(),
             lngInput,
             lng1,
             lng2,
@@ -751,8 +815,8 @@ var NEHRPCalc2015 = function (params) {
 
       } else if (lng1 === lng2) {
         result = _this.interpolateResults(
-            data[0].get(),
-            data[1].get(),
+            data[0], //.get(),
+            data[1], //.get(),
             latInput,
             lat1,
             lat2,
@@ -762,25 +826,25 @@ var NEHRPCalc2015 = function (params) {
         throw new Error('Lat or Lng don\'t match and only 2 data points');
       }
     } else if (data.length === 4) {
-      lat1 = data[0].get('latitude');
-      lat3 = data[2].get('latitude');
+      lat1 = data[0].latitude; // .get('latitude');
+      lat3 = data[2].latitude; // .get('latitude');
 
-      lng1 = data[0].get('longitude');
-      lng2 = data[1].get('longitude');
-      lng3 = data[2].get('longitude');
-      lng4 = data[3].get('longitude');
+      lng1 = data[0].longitude; // .get('longitude');
+      lng2 = data[1].longitude; // .get('longitude');
+      lng3 = data[2].longitude; // .get('longitude');
+      lng4 = data[3].longitude; // .get('longitude');
 
       resultLat1 = _this.interpolateResults(
-          data[0].get(),
-          data[1].get(),
+          data[0], //.get(),
+          data[1], //.get(),
           lngInput,
           lng1,
           lng2,
           log);
 
       resultLat3 = _this.interpolateResults(
-          data[2].get(),
-          data[3].get(),
+          data[2], //.get(),
+          data[3], //.get(),
           lngInput,
           lng3,
           lng4,
@@ -798,7 +862,8 @@ var NEHRPCalc2015 = function (params) {
       throw new Error('Does not have 1, 2, or 4 points.');
     }
 
-    return Model(result);
+    // return Model(result);
+    return result;
   };
 
   _initialize(params);
