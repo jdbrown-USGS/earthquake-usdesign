@@ -60,9 +60,9 @@ let formatResponse = function (response) {
     },
     'response': {
       'data': {
-        'sms': Math.floor(calc.getSms(response) * 1000) / 1000,
-        'sm1': Math.floor(calc.getSm1(response) * 1000) / 1000,
-        'pgam': Math.floor(calc.getPgam(response) * 1000) / 1000
+        'sms': Math.round(calc.getSms(response) * 100000) / 100000,
+        'sm1': Math.round(calc.getSm1(response) * 100000) / 100000,
+        'pgam':Math.round(calc.getPgam(response) * 100000) / 100000
       }
     }
   };
@@ -71,49 +71,45 @@ let formatResponse = function (response) {
 };
 
 let run = function () {
-  return new Promise((resolve, reject) => {
-    let qcArray;
+  let qcArray;
 
-    qcArray = [];
+  qcArray = [];
 
-    for (let i = 0, len = ASCE7_16.length; i < len; i++) {
-      let calculation,
-          params,
-          request,
-          url;
+  for (let i = 0, len = ASCE7_16.length; i < len; i++) {
+    let calculation,
+        params,
+        request,
+        url;
 
-      params = ASCE7_16[i].request.parameters;
-      request = {
-        'latitude': params.latitude,
-        'longitude': params.longitude,
-        'risk_category': mapInputValue(params.riskCategory, RISK_CATEGORY),
-        'title': params.title,
-        'site_class': mapInputValue(params.siteClass, SITE_CLASS),
-        'design_code': DESIGN_CODE['NEHRP-2015']
-      };
+    params = ASCE7_16[i].request.parameters;
+    request = {
+      'latitude': params.latitude,
+      'longitude': params.longitude,
+      'risk_category': mapInputValue(params.riskCategory, RISK_CATEGORY),
+      'title': params.title,
+      'site_class': mapInputValue(params.siteClass, SITE_CLASS),
+      'design_code': DESIGN_CODE['NEHRP-2015']
+    };
 
-      url = 'https://earthquake.usgs.gov/designmaps/beta/us/service/' +
-          request.design_code + '/' +
-          request.site_class + '/' +
-          request.risk_category + '/' +
-          request.longitude + '/' +
-          request.latitude + '/' +
-          querystring.escape(request.title);
+    url = 'https://earthquake.usgs.gov/designmaps/beta/us/service/' +
+        request.design_code + '/' +
+        request.site_class + '/' +
+        request.risk_category + '/' +
+        request.longitude + '/' +
+        request.latitude + '/' +
+        querystring.escape(request.title);
 
-      fetch(url).then(function (res) {
-          return res.json();
-        }).then(function (body) {
-          qcArray.push(formatResponse(body));
-          //console.log(JSON.stringify(formatResponse(body), null, 2) + ',');
-        }).catch(function(err) {
-          console.log('Error ' + err);
-      });
-    }
-
-    resolve(qcArray);
-  });
+    fetch(url).then(function (res) {
+        return res.json();
+      }).then(function (body) {
+        qcArray.push(formatResponse(body));
+        if (qcArray.length === ASCE7_16.length) {
+          console.log(JSON.stringify(qcArray, null, 2));
+        }
+      }).catch(function(err) {
+        console.log('Error ' + err);
+    });
+  }
 }
 
-run().then((result) => {
-  console.log(JSON.stringify(qcArray, null, 2));
-});
+run();
